@@ -19,6 +19,37 @@
             bottom: 0;
             width: 100%;
         }
+
+        .mapboxgl-popup-content {
+            padding: 0px !important;
+            background: none !important;
+            border-radius: 0px !important;
+            box-shadow: none !important;
+
+        }
+
+        .elementToFadeInAndOut {
+
+            animation: fadeinout 3s linear 1 forwards;
+        }
+
+        @keyframes fadeinout {
+            0% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .mapboxgl-popup-tip {
+            margin-top: -6px;
+        }
     </style>
 </head>
 
@@ -26,54 +57,96 @@
     <div id="map"></div>
 
     <script>
+
         mapboxgl.accessToken = 'pk.eyJ1Ijoic2Vyc2Vyc2VyIiwiYSI6ImNrZnBpaWF5azBpMWMyeHBmdzJpdno1NzgifQ.4vBDF2DNuk-beXljllf3Yg';
         var map = new mapboxgl.Map({
             container: 'map', // container ID
             style: 'mapbox://styles/mapbox/dark-v10', // style URL
-            zoom: 10, // starting zoom
-            center: [-77.432, 25.0306] // starting position
+            zoom: 4, // starting zoom
+            center: {lng: -98.64191472895259, lat: 42.22303585434386}
         });
 
         map.on('load', function () {
-            // Load an image from an external URL.
-            map.loadImage(
-                'https://upload.wikimedia.org/wikipedia/commons/7/7c/201408_cat.png',
-                function (error, image) {
-                    if (error) throw error;
-
-                    // Add the image to the map style.
-                    map.addImage('cat', image);
-
-                    // Add a data source containing one point feature.
-                    map.addSource('point', {
-                        'type': 'geojson',
-                        'data': {
-                            'type': 'FeatureCollection',
-                            'features': [
-                                {
-                                    'type': 'Feature',
-                                    'geometry': {
-                                        'type': 'Point',
-                                        'coordinates': [-77.4144, 25.0759]
-                                    }
-                                }
-                            ]
-                        }
-                    });
-
-                    // Add a layer to use the image to represent the data.
-                    map.addLayer({
-                        'id': 'points',
-                        'type': 'symbol',
-                        'source': 'point', // reference the data source
-                        'layout': {
-                            'icon-image': 'cat', // reference the image
-                            'icon-size': 0.25
-                        }
-                    });
-                }
-            );
+            fetch_new();
         });
+
+
+        function fetch_new() {
+
+            const url_string = window.location.href
+            const url = new URL(url_string);
+            const ID = url.searchParams.get("id");
+
+            const threeMinsAgo = ((new Date().getTime()) / 1000).toFixed(0);
+
+
+            //fetch(`https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=1625037293`)
+            const apiUrl = `https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=${threeMinsAgo}`;
+
+            //const apiUrl = `https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=1625037293`;
+            console.log('apiUrl', apiUrl);
+
+            fetch(apiUrl)
+
+                .then(i => i.json())
+                .then(i => {
+
+                    if (i.length === 0) { return; }
+                    console.log('i', i);
+
+                    const interval = 3000;
+                    const popups = [];
+                    const time = [];
+
+                    var bounds = new mapboxgl.LngLatBounds();
+                    i.map(s => {
+
+                        const description = `<img src="${s.thumb_url}">`;
+                        const coord = [s.longitude, s.latitude];
+
+                        const popup = new mapboxgl.Popup({ className: "elementToFadeInAndOut", closeOnClick: false, closeOnMove: false })
+                            .setLngLat(coord)
+                            .setHTML(description)
+                            .setMaxWidth("300px")
+
+                        popups.push(popup)
+                        bounds.extend(coord);
+
+                        time.push(s.time_seconds)
+                    })
+
+
+                    //timer [part]
+                    const start = Math.min(...time);
+                    const stop = Math.max(...time);
+                    console.log('start,stop', start, stop);
+
+
+                    let max = popups.length;
+                    let t = 0;
+
+                    let timerId = setInterval(() => {
+
+                        const p = popups[t]
+                        p.addTo(map)
+
+                        setTimeout(() => {
+                            p.remove()
+                        }, interval)
+
+                        if (t >= max) {
+                            clearInterval(timerId);
+                        }
+                        t++;
+                    }, interval);
+
+                    map.fitBounds(bounds, { padding: 100 });
+
+                })
+
+
+
+        }
     </script>
 
 </body>
