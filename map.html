@@ -78,13 +78,7 @@
             const ID = url.searchParams.get("id");
 
             const threeMinsAgo = ((new Date(new Date().getTime() - 3 * 60000).getTime()) / 1000).toFixed(0);
-
-
-            //fetch(`https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=1625037293`)
             const apiUrl = `https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=${threeMinsAgo}`;
-
-            //const apiUrl = `https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=1625037293`;
-            console.log('apiUrl', apiUrl);
 
             fetch(apiUrl, { cache: "no-cache" })
 
@@ -101,7 +95,6 @@
 
                     var bounds = new mapboxgl.LngLatBounds();
                     i.map(s => {
-                        console.log('s', s);
                         const date = new Date(s.time_seconds * 1000)
                         const dTime = `${date.toLocaleDateString()} ${date.getHours()}:${date.getMinutes()}`;
                         const description = `<div><img src="${s.thumb_url}"></div>
@@ -132,6 +125,13 @@
 
                     let timerId = setInterval(() => {
 
+                        if (t >= max) {
+                            console.log('CLEAR TIMER.', max, t);
+                            clearInterval(timerId);
+                            fetch_new();
+                            return;
+                        }
+
                         const p = popups[t]
                         p.addTo(map)
 
@@ -139,11 +139,10 @@
                             p.remove()
                         }, interval)
 
-                        if (t >= max) {
-                            clearInterval(timerId);
-                        }
+
                         t++;
                     }, interval);
+
 
                     map.fitBounds(bounds, { padding: 100, maxZoom: 10 });
 
