@@ -68,6 +68,11 @@
 
         map.on('load', function () {
             fetch_new();
+
+            setInterval(() => {
+                fetch_new();
+                console.log('FETCH NEW DATA');
+            }, 3 * 60 * 1000)
         });
 
 
@@ -96,7 +101,10 @@
                     var bounds = new mapboxgl.LngLatBounds();
                     i.map(s => {
                         const date = new Date(s.time_seconds * 1000)
-                        const dTime = `${date.toLocaleDateString()} ${date.getHours()}:${date.getMinutes()}`;
+                        const H = ('0' + date.getHours()).substr(-2);
+                        const M = ('0' + date.getMinutes()).substr(-2);
+
+                        const dTime = `${date.toLocaleDateString()} ${H}:${M}`;
                         const description = `<div><img src="${s.thumb_url}"></div>
                         <div>${dTime}</div>
                         `;
@@ -128,7 +136,6 @@
                         if (t >= max) {
                             console.log('CLEAR TIMER.', max, t);
                             clearInterval(timerId);
-                            fetch_new();
                             return;
                         }
 
