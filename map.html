@@ -29,8 +29,7 @@
         }
 
         .elementToFadeInAndOut {
-
-            animation: fadeinout 3s linear 1 forwards;
+            animation: fadeinout 6s linear 1 forwards;
         }
 
         @keyframes fadeinout {
@@ -67,22 +66,22 @@
         });
 
         map.on('load', function () {
-            fetch_new();
+            fetch_new(10);
 
             setInterval(() => {
-                fetch_new();
+                fetch_new(3);
                 console.log('FETCH NEW DATA');
             }, 3 * 60 * 1000)
         });
 
 
-        function fetch_new() {
+        function fetch_new(minutesAgo) {
 
             const url_string = window.location.href
             const url = new URL(url_string);
             const ID = url.searchParams.get("id");
 
-            const threeMinsAgo = ((new Date(new Date().getTime() - 3 * 60000).getTime()) / 1000).toFixed(0);
+            const threeMinsAgo = ((new Date(new Date().getTime() - minutesAgo * 60000).getTime()) / 1000).toFixed(0);
             const apiUrl = `https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=${threeMinsAgo}`;
 
             fetch(apiUrl, { cache: "no-cache" })
@@ -94,7 +93,7 @@
                     console.log('i', i);
                     if (i.length === 0) { return; }
 
-                    const interval = 3000;
+                    const interval = 6000;
                     const popups = [];
                     const time = [];
 
