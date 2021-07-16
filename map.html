@@ -81,8 +81,8 @@
             const url = new URL(url_string);
             const ID = url.searchParams.get("id");
 
-            const threeMinsAgo = ((new Date(new Date().getTime() - minutesAgo * 60000).getTime()) / 1000).toFixed(0);
-            const apiUrl = `https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=${threeMinsAgo}`;
+            const minsAgo = ((new Date(new Date().getTime() - minutesAgo * 60000).getTime()) / 1000).toFixed(0);
+            const apiUrl = `https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=${minsAgo}`;
 
             fetch(apiUrl, { cache: "no-cache" })
 
