@@ -109,12 +109,10 @@
                         `;
             const coord = [s.longitude, s.latitude];
 
-            const popup = new mapboxgl.Popup({ className: "elementToFadeInAndOut", closeOnClick: false, closeOnMove: false })
-              .setLngLat(coord)
-              .setHTML(description)
-              .setMaxWidth("300px")
-
-            popups.push(popup)
+            popups.push({
+              coord,
+              description
+            })
             bounds.extend(coord);
 
             time.push(s.time_seconds)
@@ -138,12 +136,42 @@
               return;
             }
 
-            const p = popups[t]
-            p.addTo(map)
+            let text = '000';
+            const d = popups[t]
+            getAdditionalData({
+              lat: d.coord[1],
+              lon: d.coord[0],
+              zoom: 6,
+              radius: 50000
+            }).then(i => {
+              console.log("------------->", i.manifest.elements.length)
+              const l = i.manifest.elements.length;
+              const link = i.manifest.elements[0].id
+              if (l === 1) {
+                text = '<div>1 recent video near this  DOOH placement</div>'
+              }
+              if (l > 1) {
+                text = `<div>${l} recent videos near this  DOOH placement </div>`
+              }
+              if (link) {
+                text = `<a target="_blank" href="https://map.snapchat.com/ttp/snap/${link}">${text}</a>`
+              }
 
-            setTimeout(() => {
-              p.remove()
-            }, interval)
+              const p = new mapboxgl.Popup({ className: "elementToFadeInAndOut", closeOnClick: false, closeOnMove: false })
+                .setLngLat(d.coord)
+                .setHTML(d.description + text)
+                .setMaxWidth("300px")
+              p.addTo(map)
+
+              setTimeout(() => {
+                p.remove()
+              }, interval)
+
+            })
+
+
+
+
 
 
             t++;
@@ -158,17 +186,10 @@
 
     }
 
-    getAdditionalData({
-      lat: 32.40537625911735,
-      lon: -100.09415030812823,
-      zoom: 6,
-      radius: 50000
-    })
-
     async function getAdditionalData(data) {
 
       let epoch = '';
-      await fetch('https://serg.one/cors_curl.php')
+      return await fetch('https://serg.one/cors_curl.php')
         .then(res => res.json())
         .then(json => {
           // enter you logic when the fetch is successful
@@ -182,11 +203,12 @@
           const query = `https://serg.one/cors_curl.php?lat=${lat}&lon=${lon}&zoomLevel=${zoom}&epoch=${epoch}&radius=${radius}`;
           console.log(query);
 
-          fetch(query)
+          return fetch(query)
             .then(res => res.json())
             .then(data => {
               // enter you logic when the fetch is successful
               console.log(data)
+              return data
             })
             .catch(error => {
               // enter your logic for when there is an error (ex. error toast)
