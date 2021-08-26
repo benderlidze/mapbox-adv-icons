@@ -66,7 +66,7 @@
     });
 
     map.on('load', function () {
-      fetch_new(100000);
+      fetch_new(10);
 
       setInterval(() => {
         fetch_new(3);
@@ -83,6 +83,7 @@
 
       const minsAgo = ((new Date(new Date().getTime() - minutesAgo * 60000).getTime()) / 1000).toFixed(0);
       const apiUrl = `https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=${minsAgo}`;
+      console.log('apiUrl', apiUrl);
 
       fetch(apiUrl, { cache: "no-cache" })
 
@@ -90,7 +91,7 @@
         .then(i => i.json())
         .then(i => {
 
-          console.log('i', i);
+          console.log('i!!!!', i);
           if (i.length === 0) { return; }
 
           const interval = 6000;
@@ -99,6 +100,7 @@
 
           var bounds = new mapboxgl.LngLatBounds();
           i.map(s => {
+            console.log('s.time_seconds',s.time_seconds);
             const date = new Date(s.time_seconds * 1000)
             const H = ('0' + date.getHours()).substr(-2);
             const M = ('0' + date.getMinutes()).substr(-2);
@@ -117,6 +119,8 @@
 
             time.push(s.time_seconds)
           })
+
+          console.log('popups',popups);
 
 
           //timer [part]
