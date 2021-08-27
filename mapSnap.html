@@ -46,6 +46,40 @@
       }
     }
 
+
+
+    .fadeInAndOut {
+      animation-delay: 0.5s;
+      -webkit-animation: aInOut 7s linear forwards;
+      animation: aInOut 7s linear forwards;
+    }
+
+    @-webkit-keyframes aInOut {
+
+      0%,
+      100% {
+        opacity: 0;
+      }
+
+      30%,
+      80% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes aInOut {
+
+      0%,
+      100% {
+        opacity: 0;
+      }
+
+      10%,
+      90% {
+        opacity: 1;
+      }
+    }
+
     /* .mapboxgl-popup-tip {
             margin-top: -6px;
         } */
@@ -177,7 +211,7 @@
                 text = `<a target="_blank" href="https://map.snapchat.com/ttp/snap/${link}">${text}</a>`
               }
 
-              const p = new mapboxgl.Popup({ className: "elementToFadeInAndOut", closeOnClick: false, closeOnMove: false })
+              const p = new mapboxgl.Popup({ className: "fadeInAndOut", closeOnClick: false, closeOnMove: false })
                 .setLngLat(d.coord)
                 .setHTML(d.description + text)
                 .setMaxWidth("300px")
