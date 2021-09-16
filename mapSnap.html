@@ -116,20 +116,23 @@
     map.addControl(new mapboxgl.NavigationControl());
 
     map.on('load', function () {
-      fetch_new(10);
 
+      const url_string = window.location.href
+      const url = new URL(url_string);
+      const ID = url.searchParams.get("id");
+      const duration = url.searchParams.get("duration") || 10;
+
+      console.log(duration);
+      fetch_new(duration, ID);
       setInterval(() => {
-        fetch_new(3);
+        fetch_new(3, ID);
         console.log('FETCH NEW DATA');
       }, 3 * 60 * 1000)
     });
 
 
-    function fetch_new(minutesAgo) {
+    function fetch_new(minutesAgo, ID) {
 
-      const url_string = window.location.href
-      const url = new URL(url_string);
-      const ID = url.searchParams.get("id");
 
       const minsAgo = ((new Date(new Date().getTime() - minutesAgo * 60000).getTime()) / 1000).toFixed(0);
       const apiUrl = `https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=${minsAgo}`;
