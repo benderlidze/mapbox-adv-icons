@@ -7,6 +7,7 @@
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css" rel="stylesheet">
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -98,6 +99,7 @@
   <div id="map"></div>
 
   <script>
+    const additionalData = [];
 
     mapboxgl.accessToken = 'pk.eyJ1Ijoic2Vyc2Vyc2VyIiwiYSI6ImNrZnBpaWF5azBpMWMyeHBmdzJpdno1NzgifQ.4vBDF2DNuk-beXljllf3Yg';
     var map = new mapboxgl.Map({
@@ -123,6 +125,7 @@
       const duration = url.searchParams.get("duration") || 10;
 
       console.log(duration);
+      fetch_additional('https://campaign-maps.s3.amazonaws.com/Grain%20-%20Lowell%20Farms%20-%20Customers%207-22/Grain%20-%20Lowell%20Farms%20-%20Customers%207-22-inventory.geojson')
       fetch_new(duration, ID);
       setInterval(() => {
         fetch_new(3, ID);
@@ -130,6 +133,14 @@
       }, 3 * 60 * 1000)
     });
 
+    function fetch_additional(url) {
+      fetch(url)
+        .then(i => i.json())
+        .then(data => {
+          console.log('data', data);
+          additionalData.push(...data.features)
+        })
+    }
 
     function fetch_new(minutesAgo, ID) {
 
@@ -159,9 +170,10 @@
             const M = ('0' + date.getMinutes()).substr(-2);
 
             const dTime = `${date.toLocaleDateString()} ${H}:${M}`;
-            const description = `<div><img src="${s.thumb_url}"></div>
-                        <div>${dTime}</div>
-                        `;
+            const description = {
+              img: `<img src="${s.thumb_url}">`,
+              time: `${dTime}`
+            };
             const coord = [s.longitude, s.latitude];
 
             popups.push({
@@ -208,16 +220,38 @@
                 text = '<div>1 recent video near this  DOOH placement</div>'
               }
               if (l > 1) {
-                text = `<div>${l} recent videos near this  DOOH placement </div>`
+                text = `<div> ${l} recent videos near this  DOOH placement </div>`
               }
               if (link) {
-                text = `<a target="_blank" href="https://map.snapchat.com/ttp/snap/${link}">${text}</a>`
+                text = `<a target="_blank" href="https://map.snapchat.com/ttp/snap/${link}"> ${text}</a>`
+              }
+
+              var targetPoint = turf.point(d.coord);
+              var points = turf.featureCollection(additionalData);
+              var nearest = turf.nearestPoint(targetPoint, points);
+              console.log('nearest', nearest);
+
+              let additData = '';
+              if (nearest && nearest.properties.location_type) {
+                additData = `<b> ${nearest.properties.location_type}</b></div>`
               }
 
               const p = new mapboxgl.Popup({ className: "fadeInAndOut", closeOnClick: false, closeOnMove: false })
                 .setLngLat(d.coord)
-                .setHTML(d.description + text)
+                .setHTML(`
+              
+                  <div >
+                    ${d.description.img}
+                    <div style = "display: flex; justify-content: space-between;margin:3px" >
+                      <div>${d.description.time}</div >
+                      <div>${additData}</div>
+                    </div >
+                  </div >
+
+            <div >${text}</div>
+          `)
                 .setMaxWidth("300px")
+
               p.addTo(map)
 
               setTimeout(() => {
