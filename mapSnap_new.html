@@ -123,9 +123,12 @@
       const url = new URL(url_string);
       const ID = url.searchParams.get("id");
       const duration = url.searchParams.get("duration") || 10;
+      const geojson = url.searchParams.get("geojson")
 
-      console.log(duration);
-      fetch_additional('https://campaign-maps.s3.amazonaws.com/Grain%20-%20Lowell%20Farms%20-%20Customers%207-22/Grain%20-%20Lowell%20Farms%20-%20Customers%207-22-inventory.geojson')
+
+      console.log("!!!!!!!!!!", geojson);
+      fetch_additional(`https://campaign-maps.s3.amazonaws.com/${geojson}/${geojson}-inventory.geojson`)
+
       fetch_new(duration, ID);
       setInterval(() => {
         fetch_new(3, ID);
