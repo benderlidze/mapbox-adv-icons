@@ -279,7 +279,7 @@
                 essential: true // this animation is considered essential with respect to prefers-reduced-motion
             });
             map.once('moveend', ({ originalEvent }) => {
-                //start animation
+                cancelAnimationFrame(animation);
                 rotateCamera(0);
             });
         }
