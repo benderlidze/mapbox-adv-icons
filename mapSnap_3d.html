@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .mapboxgl-popup-content {
+            padding: 0px !important;
+            /* background: none !important; */
+            border-radius: 0px !important;
+            box-shadow: none !important;
+
+        }
+
+        .elementToFadeInAndOut {
+            animation: fadeinout 8s linear 1 forwards;
+        }
+
+        @keyframes fadeinout {
+            0% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+
+
+        .fadeInAndOut {
+            animation-delay: 0.5s;
+            -webkit-animation: aInOut 7s linear forwards;
+            animation: aInOut 7s linear forwards;
+        }
+
+        @-webkit-keyframes aInOut {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            30%,
+            80% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes aInOut {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            10%,
+            90% {
+                opacity: 1;
+            }
+        }
+
+        /* .mapboxgl-popup-tip {
+            margin-top: -6px;
+        } */
+        .loader {
+            margin: 100px auto;
+            font-size: 25px;
+            width: 1em;
+            height: 1em;
+            border-radius: 50%;
+            position: relative;
+            text-indent: -9999em;
+            -webkit-animation: load5 1.1s infinite ease;
+            animation: load5 1.1s infinite ease;
+            -webkit-transform: translateZ(0);
+            -ms-transform: translateZ(0);
+            transform: translateZ(0);
+        }
+
+        @-webkit-keyframes load5 {
+
+            0%,
+            100% {
+                box-shadow: 0em -2.6em 0em 0em #ffffff, 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2), 2.5em 0em 0 0em rgba(255, 255, 255, 0.2), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.2), 0em 2.5em 0 0em rgba(255, 255, 255, 0.2), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.2), -2.6em 0em 0 0em rgba(255, 255, 255, 0.5), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.7);
+            }
+
+            12.5% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.7), 1.8em -1.8em 0 0em #ffffff, 2.5em 0em 0 0em rgba(255, 255, 255, 0.2), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.2), 0em 2.5em 0 0em rgba(255, 255, 255, 0.2), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.2), -2.6em 0em 0 0em rgba(255, 255, 255, 0.2), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.5);
+            }
+
+            25% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.5), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.7), 2.5em 0em 0 0em #ffffff, 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.2), 0em 2.5em 0 0em rgba(255, 255, 255, 0.2), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.2), -2.6em 0em 0 0em rgba(255, 255, 255, 0.2), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2);
+            }
+
+            37.5% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.2), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.5), 2.5em 0em 0 0em rgba(255, 255, 255, 0.7), 1.75em 1.75em 0 0em #ffffff, 0em 2.5em 0 0em rgba(255, 255, 255, 0.2), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.2), -2.6em 0em 0 0em rgba(255, 255, 255, 0.2), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2);
+            }
+
+            50% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.2), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2), 2.5em 0em 0 0em rgba(255, 255, 255, 0.5), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.7), 0em 2.5em 0 0em #ffffff, -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.2), -2.6em 0em 0 0em rgba(255, 255, 255, 0.2), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2);
+            }
+
+            62.5% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.2), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2), 2.5em 0em 0 0em rgba(255, 255, 255, 0.2), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.5), 0em 2.5em 0 0em rgba(255, 255, 255, 0.7), -1.8em 1.8em 0 0em #ffffff, -2.6em 0em 0 0em rgba(255, 255, 255, 0.2), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2);
+            }
+
+            75% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.2), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2), 2.5em 0em 0 0em rgba(255, 255, 255, 0.2), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.2), 0em 2.5em 0 0em rgba(255, 255, 255, 0.5), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.7), -2.6em 0em 0 0em #ffffff, -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2);
+            }
+
+            87.5% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.2), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2), 2.5em 0em 0 0em rgba(255, 255, 255, 0.2), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.2), 0em 2.5em 0 0em rgba(255, 255, 255, 0.2), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.5), -2.6em 0em 0 0em rgba(255, 255, 255, 0.7), -1.8em -1.8em 0 0em #ffffff;
+            }
+        }
+
+        @keyframes load5 {
+
+            0%,
+            100% {
+                box-shadow: 0em -2.6em 0em 0em #ffffff, 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2), 2.5em 0em 0 0em rgba(255, 255, 255, 0.2), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.2), 0em 2.5em 0 0em rgba(255, 255, 255, 0.2), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.2), -2.6em 0em 0 0em rgba(255, 255, 255, 0.5), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.7);
+            }
+
+            12.5% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.7), 1.8em -1.8em 0 0em #ffffff, 2.5em 0em 0 0em rgba(255, 255, 255, 0.2), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.2), 0em 2.5em 0 0em rgba(255, 255, 255, 0.2), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.2), -2.6em 0em 0 0em rgba(255, 255, 255, 0.2), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.5);
+            }
+
+            25% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.5), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.7), 2.5em 0em 0 0em #ffffff, 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.2), 0em 2.5em 0 0em rgba(255, 255, 255, 0.2), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.2), -2.6em 0em 0 0em rgba(255, 255, 255, 0.2), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2);
+            }
+
+            37.5% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.2), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.5), 2.5em 0em 0 0em rgba(255, 255, 255, 0.7), 1.75em 1.75em 0 0em #ffffff, 0em 2.5em 0 0em rgba(255, 255, 255, 0.2), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.2), -2.6em 0em 0 0em rgba(255, 255, 255, 0.2), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2);
+            }
+
+            50% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.2), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2), 2.5em 0em 0 0em rgba(255, 255, 255, 0.5), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.7), 0em 2.5em 0 0em #ffffff, -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.2), -2.6em 0em 0 0em rgba(255, 255, 255, 0.2), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2);
+            }
+
+            62.5% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.2), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2), 2.5em 0em 0 0em rgba(255, 255, 255, 0.2), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.5), 0em 2.5em 0 0em rgba(255, 255, 255, 0.7), -1.8em 1.8em 0 0em #ffffff, -2.6em 0em 0 0em rgba(255, 255, 255, 0.2), -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2);
+            }
+
+            75% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.2), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2), 2.5em 0em 0 0em rgba(255, 255, 255, 0.2), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.2), 0em 2.5em 0 0em rgba(255, 255, 255, 0.5), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.7), -2.6em 0em 0 0em #ffffff, -1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2);
+            }
+
+            87.5% {
+                box-shadow: 0em -2.6em 0em 0em rgba(255, 255, 255, 0.2), 1.8em -1.8em 0 0em rgba(255, 255, 255, 0.2), 2.5em 0em 0 0em rgba(255, 255, 255, 0.2), 1.75em 1.75em 0 0em rgba(255, 255, 255, 0.2), 0em 2.5em 0 0em rgba(255, 255, 255, 0.2), -1.8em 1.8em 0 0em rgba(255, 255, 255, 0.5), -2.6em 0em 0 0em rgba(255, 255, 255, 0.7), -1.8em -1.8em 0 0em #ffffff;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Load the `mapbox-gl-geocoder` plugin. -->
+    <script
+        src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet"
+        href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.css"
+        type="text/css">
+
+
+    <div id="loading"
+        style="background:rgba(0, 0, 0, 0.7);position: absolute;z-index: 1000;width:100vw;height:100vh;display:flex;align-content: center;justify-content: center;align-items: center;">
+        <div class="loader">Loading...</div>
+    </div>
+
+    <div id="map"></div>
+
+    <script>
+        const loading = document.getElementById("loading");
+        const additionalData = [];
+        var animation;
+
+        mapboxgl.accessToken = 'pk.eyJ1Ijoic2Vyc2Vyc2VyIiwiYSI6ImNrZnBpaWF5azBpMWMyeHBmdzJpdno1NzgifQ.4vBDF2DNuk-beXljllf3Yg';
+        var map = new mapboxgl.Map({
+            container: 'map', // container ID
+            style: 'mapbox://styles/mapbox/satellite-v9', // style URL
+            zoom: 4, // starting zoom
+            center: { lng: -98.64191472895259, lat: 42.22303585434386 }
+        });
+        // Add the control to the map.
+        map.addControl(
+            new MapboxGeocoder({
+                accessToken: mapboxgl.accessToken,
+                mapboxgl: mapboxgl
+            })
+        );
+        map.addControl(new mapboxgl.NavigationControl());
+
+        map.on('load', function () {
+
+            if (!map.getSource('composite')) {
+
+                map.addSource('composite', {
+                    type: 'vector',
+                    url: 'mapbox://mapbox.mapbox-streets-v7'
+                });
+
+                map.addLayer({
+                    'id': '3d-buildings',
+                    'source': 'composite',
+                    'source-layer': 'building',
+                    'filter': ['==', 'extrude', 'true'],
+                    'type': 'fill-extrusion',
+                    'minzoom': 15,
+                    'paint': {
+                        'fill-extrusion-color': '#aaa',
+                        'fill-extrusion-height': {
+                            'type': 'identity',
+                            'property': 'height'
+                        },
+                        'fill-extrusion-base': {
+                            'type': 'identity',
+                            'property': 'min_height'
+                        },
+                        'fill-extrusion-opacity': .6
+                    }
+                });
+            }
+
+
+            const url_string = window.location.href
+            const url = new URL(url_string);
+            const ID = url.searchParams.get("id");
+            const duration = url.searchParams.get("duration") || 10;
+            const geojson = url.searchParams.get("geojson")
+
+
+            console.log("!!!!!!!!!!", geojson);
+            fetch_additional(`https://campaign-maps.s3.amazonaws.com/${geojson}/${geojson}-inventory.geojson`)
+
+            fetch_new(duration, ID);
+            setInterval(() => {
+                fetch_new(3, ID);
+                console.log('FETCH NEW DATA');
+            }, 3 * 60 * 1000)
+
+
+            map.on("click", () => {
+                console.log('click');
+                cancelAnimationFrame(animation);
+            })
+        });
+
+
+
+        function fly(center) {
+            cancelAnimationFrame(animation);
+            map.flyTo({
+                center: center,
+                zoom: 18,
+                pitch: 45,
+                speed: 1.5, // make the flying slow
+                // bearing: 40,
+                essential: true // this animation is considered essential with respect to prefers-reduced-motion
+            });
+            map.once('moveend', ({ originalEvent }) => {
+                //start animation
+                rotateCamera(0);
+            });
+        }
+        function rotateCamera(timestamp) {
+            // clamp the rotation between 0 -360 degrees
+            // Divide timestamp by 100 to slow rotation to ~10 degrees / sec
+            //const b = map.getBearing() + 1;
+            //map.rotateTo((timestamp / 100) % 360, { duration: 0 });
+
+            map.setBearing(map.getBearing() + 0.1)
+            // Request the next frame of the animation.
+            animation = requestAnimationFrame(rotateCamera);
+        }
+
+        function fetch_additional(url) {
+            fetch(url)
+                .then(i => i.json())
+                .then(data => {
+                    console.log('data', data);
+                    additionalData.push(...data.features)
+                })
+        }
+
+        function fetch_new(minutesAgo, ID) {
+
+
+            const minsAgo = ((new Date(new Date().getTime() - minutesAgo * 60000).getTime()) / 1000).toFixed(0);
+            const apiUrl = `https://serg.one/cors_api.php?query=https://b-trafficking.vistarmedia.com/order/${ID}/event/?since=${minsAgo}`;
+            console.log('apiUrl', apiUrl);
+
+            fetch(apiUrl, { cache: "no-cache" })
+
+
+                .then(i => i.json())
+                .then(i => {
+
+                    console.log('i!!!!', i);
+                    if (i.length === 0) { return; }
+
+                    const interval = 8000;
+                    const popups = [];
+                    const time = [];
+
+                    var bounds = new mapboxgl.LngLatBounds();
+                    i.map(s => {
+                        console.log('s.time_seconds', s.time_seconds);
+                        const date = new Date(s.time_seconds * 1000)
+                        const H = ('0' + date.getHours()).substr(-2);
+                        const M = ('0' + date.getMinutes()).substr(-2);
+
+                        const dTime = `${date.toLocaleDateString()} ${H}:${M}`;
+                        const description = {
+                            img: `<img src="${s.thumb_url}">`,
+                            time: `${dTime}`
+                        };
+                        const coord = [s.longitude, s.latitude];
+
+                        popups.push({
+                            coord,
+                            description
+                        })
+                        bounds.extend(coord);
+
+                        time.push(s.time_seconds)
+                    })
+
+                    console.log('popups', popups);
+
+
+                    //timer [part]
+                    const start = Math.min(...time);
+                    const stop = Math.max(...time);
+                    console.log('start,stop', start, stop);
+
+
+                    let max = popups.length;
+                    let t = 0;
+
+                    let timerId = setInterval(() => {
+
+                        if (t >= max) {
+                            console.log('CLEAR TIMER.', max, t);
+                            clearInterval(timerId);
+                            return;
+                        }
+
+                        let text = '000';
+                        const d = popups[t]
+                        getAdditionalData({
+                            lat: d.coord[1],
+                            lon: d.coord[0],
+                            zoom: 6,
+                            radius: 50000
+                        }).then(i => {
+                            console.log("------------->", i.manifest.elements.length)
+                            const l = i.manifest.elements.length;
+                            const link = i.manifest.elements[0].id
+                            if (l === 1) {
+                                text = '<div>1 recent video near this  DOOH placement</div>'
+                            }
+                            if (l > 1) {
+                                text = `<div> ${l} recent videos near this  DOOH placement </div>`
+                            }
+                            if (link) {
+                                text = `<a target="_blank" href="https://map.snapchat.com/ttp/snap/${link}"> ${text}</a>`
+                            }
+
+                            var targetPoint = turf.point(d.coord);
+                            var points = turf.featureCollection(additionalData);
+                            var nearest = turf.nearestPoint(targetPoint, points);
+                            console.log('nearest', nearest);
+
+                            let additData = '';
+                            if (nearest && nearest.properties.location_type) {
+                                additData = `<b> ${nearest.properties.location_type}</b></div>`
+                            }
+
+                            const p = new mapboxgl.Popup({ className: "fadeInAndOut", closeOnClick: false, closeOnMove: false })
+                                .setLngLat(d.coord)
+                                .setHTML(`
+                                            <div >
+                                                ${d.description.img}
+                                                <div style = "display: flex; justify-content: space-between;margin:3px" >
+                                                <div>${d.description.time}</div >
+                                                <div>${additData}</div>
+                                                </div >
+                                            </div >
+
+                                        <div >${text}</div>
+                                    `)
+                                .setMaxWidth("300px")
+
+                            p.addTo(map)
+
+                            loading.style.display = 'none'; // hide loading spinner 
+
+                            fly(d.coord)
+
+                            setTimeout(() => {
+                                p.remove()
+                            }, interval)
+
+                        })
+
+
+                        t++;
+                    }, interval);
+
+
+                    map.fitBounds(bounds, { padding: 100, maxZoom: 10 });
+
+                })
+
+        }
+
+        async function getAdditionalData(data) {
+
+            let epoch = '';
+            return await fetch('https://serg.one/cors_curl.php')
+                .then(res => res.json())
+                .then(json => {
+                    // enter you logic when the fetch is successful
+                    console.log(json)
+                    const e = json.tileSetInfos.find(i => i.id.type === "HEAT")
+                    epoch = e.id.epoch;
+
+                    console.log(epoch);
+
+                    const { lat, lon, zoom, radius } = data;
+                    const query = `https://serg.one/cors_curl.php?lat=${lat}&lon=${lon}&zoomLevel=${zoom}&epoch=${epoch}&radius=${radius}`;
+                    console.log(query);
+
+                    return fetch(query)
+                        .then(res => res.json())
+                        .then(data => {
+                            // enter you logic when the fetch is successful
+                            console.log(data)
+                            return data
+                        })
+                        .catch(error => {
+                            // enter your logic for when there is an error (ex. error toast)
+                            console.log(error)
+                        })
+                })
+
+        }
+    </script>
+
+</body>
+
+</html>
