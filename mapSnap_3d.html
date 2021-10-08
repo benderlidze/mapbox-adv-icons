@@ -398,6 +398,7 @@
 
                         let text = '000';
                         const d = popups[t]
+                        console.log('ERROR!!!!!!!!!!????', d);
                         getAdditionalData({
                             lat: d.coord[1],
                             lon: d.coord[0],
@@ -417,10 +418,15 @@
                                 text = `<a target="_blank" href="https://map.snapchat.com/ttp/snap/${link}"> ${text}</a>`
                             }
 
+                            console.log('additionalData', additionalData);
+
                             var targetPoint = turf.point(d.coord);
-                            var points = turf.featureCollection(additionalData);
+                            var points = turf.featureCollection(...additionalData);
+                            // console.log('targetPoint', targetPoint);
+                            // console.log('points', points);
                             var nearest = turf.nearestPoint(targetPoint, points);
-                            console.log('nearest', nearest);
+                            //console.log('nearest', nearest);
+                           
 
                             let additData = '';
                             if (nearest && nearest.properties.location_type) {
