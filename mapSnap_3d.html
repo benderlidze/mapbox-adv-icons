@@ -193,7 +193,14 @@
     <script>
         const loading = document.getElementById("loading");
         const additionalData = [];
+        const locationTypes = [];
         var animation;
+
+        fetch("goldfish_venue_types.json")
+            .then(i => i.json())
+            .then(i => {
+                locationTypes.push(...i.locationType)
+            })
 
         mapboxgl.accessToken = 'pk.eyJ1Ijoic2Vyc2Vyc2VyIiwiYSI6ImNrZnBpaWF5azBpMWMyeHBmdzJpdno1NzgifQ.4vBDF2DNuk-beXljllf3Yg';
         var map = new mapboxgl.Map({
@@ -248,10 +255,11 @@
             const ID = url.searchParams.get("id");
             const duration = url.searchParams.get("duration") || 10;
             const geojson = url.searchParams.get("geojson")
+            const venueFilter = getVenue(url.searchParams.get("venue_filter"))
 
+            console.log("venue_filter", venueFilter);
 
-            console.log("!!!!!!!!!!", geojson);
-            fetch_additional(`https://campaign-maps.s3.amazonaws.com/${geojson}/${geojson}-inventory.geojson`)
+            fetch_additional(`https://campaign-maps.s3.amazonaws.com/${geojson}/${geojson}-inventory.geojson`, venueFilter)
 
             fetch_new(duration, ID);
             setInterval(() => {
@@ -266,6 +274,19 @@
             })
         });
 
+        function getVenue(data) {
+            let a = '';
+            if (data) {
+                try {
+                    a = JSON.parse(data);
+                    a = locationTypes.filter(i => a.includes(i.id)).map(i => i.name)
+                } catch (e) {
+                    console.log('e', e);
+                    a = '';
+                }
+            }
+            return a;
+        }
 
 
         function fly(center) {
@@ -294,12 +315,22 @@
             animation = requestAnimationFrame(rotateCamera);
         }
 
-        function fetch_additional(url) {
+        function fetch_additional(url, venueFilter) {
             fetch(url)
                 .then(i => i.json())
                 .then(data => {
                     console.log('data', data);
-                    additionalData.push(...data.features)
+
+                    //FILTER BY VENUE TYPE 
+                    let filtered = [...data.features];
+
+                    if (venueFilter && venueFilter.length > 0) {
+
+                        filtered = data.features.filter(i => venueFilter.includes(i.properties.location_type))
+                    }
+
+                    console.log('filtered', filtered);
+                    additionalData.push(filtered)
                 })
         }
 
