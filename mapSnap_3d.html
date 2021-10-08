@@ -325,7 +325,6 @@
                     let filtered = [...data.features];
 
                     if (venueFilter && venueFilter.length > 0) {
-
                         filtered = data.features.filter(i => venueFilter.includes(i.properties.location_type))
                     }
 
