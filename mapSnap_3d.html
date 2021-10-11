@@ -408,6 +408,7 @@
                             console.log("------------->", i.manifest.elements.length)
                             const l = i.manifest.elements.length;
                             const link = i.manifest.elements[0].id
+                            /*
                             if (l === 1) {
                                 text = '<div>1 recent video near this  DOOH placement</div>'
                             }
@@ -417,7 +418,7 @@
                             if (link) {
                                 text = `<a target="_blank" href="https://map.snapchat.com/ttp/snap/${link}"> ${text}</a>`
                             }
-
+                            */
                             console.log('additionalData', additionalData);
 
                             var targetPoint = turf.point(d.coord);
@@ -444,8 +445,8 @@
                                                 </div >
                                             </div >
 
-                                        <div >${text}</div>
-                                    `)
+                                            `)
+                                            // <div >${text}</div>
                                 .setMaxWidth("300px")
 
                             p.addTo(map)
