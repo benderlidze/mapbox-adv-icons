@@ -8,6 +8,8 @@
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -301,11 +303,21 @@
                 // bearing: 40,
                 essential: true // this animation is considered essential with respect to prefers-reduced-motion
             });
-            map.once('moveend', originalEvent => {
+
+
+
+            map.once('moveend', _.debounce(() => {
+                console.log('MOVEEND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+                cancelAnimationFrame(animation);
+                rotateCamera(0);
+            }, 200))
+            /*
+            map.once('moveend', () => {
                 console.log('MOVEEND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', originalEvent);
                 cancelAnimationFrame(animation);
                 rotateCamera(0);
             });
+            */
         }
         function rotateCamera(timestamp) {
 
@@ -353,6 +365,8 @@
                     const time = [];
 
                     var bounds = new mapboxgl.LngLatBounds();
+                    const height = map.getCanvas().height < 1080 ? "300px" : "none";
+
                     i.map(s => {
                         console.log('s.time_seconds', s.time_seconds);
                         const date = new Date(s.time_seconds * 1000)
@@ -361,7 +375,12 @@
 
                         const dTime = `${date.toLocaleDateString()} ${H}:${M}`;
                         const description = {
-                            img: `<img src="${s.thumb_url}">`,
+                            img: `<div style="
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items :center; 
+"><img src="${s.thumb_url}" style="text-align:center; max-height:${height}"></div>`,
                             time: `${dTime}`
                         };
                         const coord = [s.longitude, s.latitude];
