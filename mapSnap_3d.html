@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <title></title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
         body {
@@ -196,11 +196,13 @@
         const locationTypes = [];
         var animation;
 
+        /*
         fetch("goldfish_venue_types.json")
             .then(i => i.json())
             .then(i => {
                 locationTypes.push(...i.locationType)
             })
+            */
 
         mapboxgl.accessToken = 'pk.eyJ1Ijoic2Vyc2Vyc2VyIiwiYSI6ImNrZnBpaWF5azBpMWMyeHBmdzJpdno1NzgifQ.4vBDF2DNuk-beXljllf3Yg';
         var map = new mapboxgl.Map({
@@ -255,7 +257,7 @@
             const ID = url.searchParams.get("id");
             const duration = url.searchParams.get("duration") || 10;
             const geojson = url.searchParams.get("geojson")
-            const venueFilter = getVenue(url.searchParams.get("venue_filter"))
+            const venueFilter = url.searchParams.get("venue_filter")
 
             console.log("venue_filter", venueFilter);
 
@@ -299,19 +301,15 @@
                 // bearing: 40,
                 essential: true // this animation is considered essential with respect to prefers-reduced-motion
             });
-            map.once('moveend', ({ originalEvent }) => {
+            map.once('moveend', originalEvent => {
+                console.log('MOVEEND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', originalEvent);
                 cancelAnimationFrame(animation);
                 rotateCamera(0);
             });
         }
         function rotateCamera(timestamp) {
-            // clamp the rotation between 0 -360 degrees
-            // Divide timestamp by 100 to slow rotation to ~10 degrees / sec
-            //const b = map.getBearing() + 1;
-            //map.rotateTo((timestamp / 100) % 360, { duration: 0 });
 
             map.setBearing(map.getBearing() + 0.1)
-            // Request the next frame of the animation.
             animation = requestAnimationFrame(rotateCamera);
         }
 
@@ -320,12 +318,13 @@
                 .then(i => i.json())
                 .then(data => {
                     console.log('data', data);
+                    console.log('venueFilter', venueFilter);
 
                     //FILTER BY VENUE TYPE 
                     let filtered = [...data.features];
 
                     if (venueFilter && venueFilter.length > 0) {
-                        filtered = data.features.filter(i => venueFilter.includes(i.properties.location_type))
+                        filtered = data.features.filter(i => venueFilter.includes(i.properties.location_type_id))
                     }
 
                     console.log('filtered', filtered);
@@ -427,7 +426,7 @@
                             // console.log('points', points);
                             var nearest = turf.nearestPoint(targetPoint, points);
                             //console.log('nearest', nearest);
-                           
+
 
                             let additData = '';
                             if (nearest && nearest.properties.location_type) {
@@ -446,7 +445,7 @@
                                             </div >
 
                                             `)
-                                            // <div >${text}</div>
+                                // <div >${text}</div>
                                 .setMaxWidth("300px")
 
                             p.addTo(map)
