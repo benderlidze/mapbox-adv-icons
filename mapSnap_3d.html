@@ -292,25 +292,29 @@
             return a;
         }
 
-
+        let block = false;//should prevent double moveend on moveend 
         function fly(center) {
+            block = false;
             cancelAnimationFrame(animation);
             map.flyTo({
                 center: center,
                 zoom: 18,
                 pitch: 45,
-                speed: 1.5, // make the flying slow
+                speed: 4, // make the flying slow
                 // bearing: 40,
                 essential: true // this animation is considered essential with respect to prefers-reduced-motion
             });
 
-
-
             map.once('moveend', _.debounce(() => {
-                console.log('MOVEEND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-                cancelAnimationFrame(animation);
-                rotateCamera(0);
+                if (!block) {
+                    console.log('block', block);
+                    console.log('MOVEEND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', (new Date()).getTime());
+                    cancelAnimationFrame(animation);
+                    rotateCamera(0);
+                    block = true;
+                }
             }, 200))
+
             /*
             map.once('moveend', () => {
                 console.log('MOVEEND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', originalEvent);
