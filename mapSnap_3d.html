@@ -294,6 +294,7 @@
 
         let block = false;//should prevent double moveend on moveend 
         function fly(center) {
+            console.log('fly', center);
             block = false;
             cancelAnimationFrame(animation);
             map.flyTo({
@@ -333,8 +334,8 @@
             fetch(url)
                 .then(i => i.json())
                 .then(data => {
-                    console.log('data', data);
-                    console.log('venueFilter', venueFilter);
+                    console.log('fetch_additional', data);
+                    // console.log('venueFilter', venueFilter);
 
                     //FILTER BY VENUE TYPE 
                     let filtered = [...data.features];
@@ -343,7 +344,7 @@
                         filtered = data.features.filter(i => venueFilter.includes(i.properties.location_type_id))
                     }
 
-                    console.log('filtered', filtered);
+                    // console.log('filtered', filtered);
                     additionalData.push(filtered)
                 })
         }
@@ -361,7 +362,7 @@
                 .then(i => i.json())
                 .then(i => {
 
-                    console.log('i!!!!', i);
+                    // console.log('i!!!!', i);
                     if (i.length === 0) { return; }
 
                     const interval = 8000;
@@ -369,10 +370,10 @@
                     const time = [];
 
                     var bounds = new mapboxgl.LngLatBounds();
-                    const height = map.getCanvas().height < 1080 ? "300px" : "none";
-
+                    const height = window.screen.height < 1000 ? "280px" : "none";
+                    console.log('HEIGHT', height);
                     i.map(s => {
-                        console.log('s.time_seconds', s.time_seconds);
+                        // console.log('s.time_seconds', s.time_seconds);
                         const date = new Date(s.time_seconds * 1000)
                         const H = ('0' + date.getHours()).substr(-2);
                         const M = ('0' + date.getMinutes()).substr(-2);
@@ -380,11 +381,11 @@
                         const dTime = `${date.toLocaleDateString()} ${H}:${M}`;
                         const description = {
                             img: `<div style="
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items :center; 
-"><img src="${s.thumb_url}" style="text-align:center; max-height:${height}"></div>`,
+                                    display: flex;
+                                    flex-direction: column;
+                                    justify-content: center;
+                                    align-items :center; 
+                                    "><img src="${s.thumb_url}" style="text-align:center; max-height:${height}"></div>`,
                             time: `${dTime}`
                         };
                         const coord = [s.longitude, s.latitude];
@@ -397,9 +398,6 @@
 
                         time.push(s.time_seconds)
                     })
-
-                    console.log('popups', popups);
-
 
                     //timer [part]
                     const start = Math.min(...time);
@@ -420,14 +418,14 @@
 
                         let text = '000';
                         const d = popups[t]
-                        console.log('ERROR!!!!!!!!!!????', d);
+                        // console.log('ERROR!!!!!!!!!!????', d);
                         getAdditionalData({
                             lat: d.coord[1],
                             lon: d.coord[0],
                             zoom: 6,
                             radius: 50000
                         }).then(i => {
-                            console.log("------------->", i.manifest.elements.length)
+                            // console.log("------------->", i.manifest.elements.length)
                             const l = i.manifest.elements.length;
                             const link = i.manifest.elements[0].id
                             /*
@@ -472,10 +470,10 @@
                                 .setMaxWidth("300px")
 
                             p.addTo(map)
-
                             loading.style.display = 'none'; // hide loading spinner 
 
-                            fly(d.coord)
+                            fly(d.coord, p)
+
 
                             setTimeout(() => {
                                 p.remove()
@@ -483,9 +481,8 @@
 
                         })
 
-
                         t++;
-                    }, interval);
+                    }, interval + 1);
 
 
                     map.fitBounds(bounds, { padding: 100, maxZoom: 10 });
@@ -500,22 +497,21 @@
             return await fetch('https://serg.one/cors_curl.php')
                 .then(res => res.json())
                 .then(json => {
-                    // enter you logic when the fetch is successful
-                    console.log(json)
+                    // console.log(json)
                     const e = json.tileSetInfos.find(i => i.id.type === "HEAT")
                     epoch = e.id.epoch;
 
-                    console.log(epoch);
+                    // console.log(epoch);
 
                     const { lat, lon, zoom, radius } = data;
                     const query = `https://serg.one/cors_curl.php?lat=${lat}&lon=${lon}&zoomLevel=${zoom}&epoch=${epoch}&radius=${radius}`;
-                    console.log(query);
+                    // console.log(query);
 
                     return fetch(query)
                         .then(res => res.json())
                         .then(data => {
                             // enter you logic when the fetch is successful
-                            console.log(data)
+                            // console.log(data)
                             return data
                         })
                         .catch(error => {
