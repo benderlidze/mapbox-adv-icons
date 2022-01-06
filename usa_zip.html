@@ -31,13 +31,51 @@
 
   <script>
 
+    const citymap = [
+      {
+        center: { lat: 33.10036716, lng: -96.8006378 },
+        population: 2714856,
+        title: "9506 SH -121 75035, Frisco TX",
+        name: 'chicago'
+      },
+      // newyork: {
+      //   center: { lat: 32.83858445, lng: -96.77099553 },
+      //   population: 8405837,
+      //   title:"5665 E Mockingbird Lane 75206, Dallas TX"
+      // },
+      {
+        center: { lat: 33.025693, lng: -96.790306 },
+        population: 3857799,
+        title: "1901 -1941 Preston Road 75093, Plano TX",
+        name: 'losangeles'
+      },
+      {
+        center: { lat: 32.67850799327616, lng: -97.39841907 },
+        population: 603502,
+        title: "Hulen Mall 4800 S Hulen Street, Fort Worth, TX 76132",
+        name: 'vancouver'
+      },
+      {
+        center: { lat: 32.80833358, lng: -96.62461733 },
+        population: 603502,
+        title: "Town East Mall 2063 Town East Mall, Mesquite, TX 75150",
+        name: 'vancouver2'
+
+      },
+      {
+        center: { lat: 32.6810095, lng: -97.12976154 },
+        population: 603502,
+        title: "The Parks Mall 3811 S Cooper St, Arlington, TX 76015",
+        name: 'vancouver3'
+      },
+    ];
 
     mapboxgl.accessToken = 'pk.eyJ1Ijoic2Vyc2Vyc2VyIiwiYSI6ImNrZnBpaWF5azBpMWMyeHBmdzJpdno1NzgifQ.4vBDF2DNuk-beXljllf3Yg';
     const map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/light-v10',
-      zoom: 9,
-      center: { lng: -122.4250517166777, lat: 37.7220580327421 }
+      zoom: 8,
+      center: { lng: -97.03037591317295, lat: 32.69660620480346 }
     });
 
 
@@ -119,6 +157,28 @@
       //   map.getCanvas().style.cursor = '';
       // });
 
+      map.addSource('circle', {
+        'type': 'geojson',
+        'data': {
+          'type': 'Feature',
+          'geometry': {
+            'type': 'Polygon',
+            'coordinates': []
+          }
+        }
+      });
+      map.addLayer({
+        "id": "circles",
+        "type": "fill",
+        "source": "circle",
+        "paint": {
+          "fill-color": 'red',
+          "fill-opacity": 0.6,
+          'fill-outline-color': "white",
+        },
+      });
+
+
 
       map.addSource('centers', {
         'type': 'geojson',
@@ -169,7 +229,23 @@
         })
 
 
+      const circles = citymap.map(city => {
+        const center = [city.center.lng, city.center.lat]
 
+
+        new mapboxgl.Marker()
+          .setLngLat(center)
+          .addTo(map);
+
+          
+        var radius = 15;
+        var options = { steps: 20, units: 'miles', properties: { foo: 'bar' } };
+        var circle = turf.circle(center, radius, options);
+        return circle;
+      })
+
+      const collection = turf.featureCollection(circles);
+      map.getSource("circle").setData(collection)
 
     });
 
